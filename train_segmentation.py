@@ -23,6 +23,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--batchSize', type=int, default=32, help='input batch size')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument('--nepoch', type=int, default=25, help='number of epochs to train for')
+parser.add_argument('--outf', type=str, default='seg',  help='output folder')
+parser.add_argument('--model', type=str, default = '',  help='model path')
 
 
 opt = parser.parse_args()
@@ -44,10 +46,23 @@ testdataloader = torch.utils.data.DataLoader(test_dataset, batch_size=opt.batchS
 print(len(dataset), len(test_dataset))
 num_classes = dataset.num_seg_classes
 print('classes', num_classes)
+try:
+    os.makedirs(opt.outf)
+except OSError:
+    pass
+
+blue = lambda x:'\033[94m' + x + '\033[0m'
+
 
 classifier = PointNetDenseCls(k = num_classes)
+
+if opt.model != '':
+    classifier.load_state_dict(torch.load(opt.model))
+
 optimizer = optim.SGD(classifier.parameters(), lr=0.01, momentum=0.9)
 classifier.cuda()
+
+num_batch = len(dataset)/opt.batchSize
 
 for epoch in range(opt.nepoch):
     for i, data in enumerate(dataloader, 0):
@@ -65,7 +80,7 @@ for epoch in range(opt.nepoch):
         optimizer.step()
         pred_choice = pred.data.max(1)[1]
         correct = pred_choice.eq(target.data).cpu().sum()
-        print('train loss:', loss.data[0], 'acc:', correct/float(opt.batchSize * 2500))
+        print('[%d: %d/%d] train loss: %f accuracy: %f' %(epoch, i, num_batch, loss.data[0], correct/float(opt.batchSize * 2500)))
         
         if i % 10 == 0:
             j, data = enumerate(testdataloader, 0).next()
@@ -80,4 +95,6 @@ for epoch in range(opt.nepoch):
             loss = F.nll_loss(pred, target)
             pred_choice = pred.data.max(1)[1]
             correct = pred_choice.eq(target.data).cpu().sum()
-            print('test loss:', loss.data[0], 'acc:', correct/float(opt.batchSize * 2500))
+            print('[%d: %d/%d] %s loss: %f accuracy: %f' %(epoch, i, num_batch, blue('test'), loss.data[0], correct/float(opt.batchSize * 2500)))
+    
+    torch.save(classifier.state_dict(), '%s/seg_model_%d.pth' % (opt.outf, epoch))
