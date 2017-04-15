@@ -17,7 +17,7 @@ import json
 
 
 class PartDataset(data.Dataset):
-    def __init__(self, root, npoints = 2500, classification = False):
+    def __init__(self, root, npoints = 2500, classification = False, class_choice = None, train = True):
         self.npoints = npoints
         self.root = root
         self.catfile = os.path.join(self.root, 'synsetoffset2category.txt')
@@ -30,6 +30,9 @@ class PartDataset(data.Dataset):
                 ls = line.strip().split()
                 self.cat[ls[0]] = ls[1]
         #print(self.cat)
+        if not class_choice is  None:
+            self.cat = {k:v for k,v in self.cat.items() if k in class_choice}
+            
         self.meta = {}
         for item in self.cat:
             #print('category', item)
@@ -37,7 +40,12 @@ class PartDataset(data.Dataset):
             dir_point = os.path.join(self.root, self.cat[item], 'points')
             dir_seg = os.path.join(self.root, self.cat[item], 'points_label')
             #print(dir_point, dir_seg)
-            fns = os.listdir(dir_point)
+            fns = sorted(os.listdir(dir_point))
+            if train:
+                fns = fns[:int(len(fns) * 0.9)]
+            else:
+                fns = fns[int(len(fns) * 0.9):]
+                
             #print(os.path.basename(fns))
             for fn in fns:
                 token = (os.path.splitext(os.path.basename(fn))[0]) 
@@ -49,13 +57,21 @@ class PartDataset(data.Dataset):
                 self.datapath.append((item, fn[0], fn[1]))
             
          
-        self.classes = dict(zip(self.cat, range(len(self.cat))))        
+        self.classes = dict(zip(self.cat, range(len(self.cat))))  
+        self.num_seg_classes = 0
+        if not self.classification:
+            for i in range(len(self.datapath)/50):
+                l = len(np.unique(np.loadtxt(self.datapath[i][-1]).astype(np.uint8)))
+                if l > self.num_seg_classes:
+                    self.num_seg_classes = l
+        #print(self.num_seg_classes)
+        
         
     def __getitem__(self, index):
         fn = self.datapath[index]
         cls = self.classes[self.datapath[index][0]]
         point_set = np.loadtxt(fn[1]).astype(np.float32)
-        seg = np.loadtxt(fn[2]).astype(np.uint8)
+        seg = np.loadtxt(fn[2]).astype(np.int64)
         #print(point_set.shape, seg.shape)
         
         choice = np.random.choice(len(seg), self.npoints, replace=True)
@@ -76,11 +92,12 @@ class PartDataset(data.Dataset):
 
 if __name__ == '__main__':
     print('test')
-    d = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0')
+    d = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', class_choice = ['Chair'])
     print(len(d))
     ps, seg = d[0]
     print(ps.size(), ps.type(), seg.size(),seg.type())
     
     d = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', classification = True)
+    print(len(d))
     ps, cls = d[0]
     print(ps.size(), ps.type(), cls.size(),cls.type())

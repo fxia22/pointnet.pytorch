@@ -37,32 +37,41 @@ dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                           shuffle=True, num_workers=int(opt.workers))
 
+test_dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', classification = True, train = False)
+testdataloader = torch.utils.data.DataLoader(test_dataset, batch_size=opt.batchSize,
+                                          shuffle=True, num_workers=int(opt.workers))
+
+print(len(dataset), len(test_dataset))
 num_classes = len(dataset.classes)
 print('classes', num_classes)
 
 classifier = PointNetCls(k = num_classes)
 optimizer = optim.SGD(classifier.parameters(), lr=0.01, momentum=0.9)
-
 classifier.cuda()
 
 for epoch in range(opt.nepoch):
     for i, data in enumerate(dataloader, 0):
-        print(epoch, i)
         points, target = data
         points, target = Variable(points), Variable(target[:,0])
-        points = points.transpose(2,1)
-        
-        points, target = points.cuda(), target.cuda()
-        
+        points = points.transpose(2,1) 
+        points, target = points.cuda(), target.cuda()   
         optimizer.zero_grad()
         pred, _ = classifier(points)
         loss = F.nll_loss(pred, target)
         loss.backward()
         optimizer.step()
-        
         pred_choice = pred.data.max(1)[1]
         correct = pred_choice.eq(target.data).cpu().sum()
-        print('loss:', loss.data[0], 'acc:', correct/float(opt.batchSize))
+        print('train loss:', loss.data[0], 'acc:', correct/float(opt.batchSize))
         
-        
-        
+        if i % 10 == 0:
+            j, data = enumerate(testdataloader, 0).next()
+            points, target = data
+            points, target = Variable(points), Variable(target[:,0])
+            points = points.transpose(2,1) 
+            points, target = points.cuda(), target.cuda()   
+            pred, _ = classifier(points)
+            loss = F.nll_loss(pred, target)
+            pred_choice = pred.data.max(1)[1]
+            correct = pred_choice.eq(target.data).cpu().sum()
+            print('test loss:', loss.data[0], 'acc:', correct/float(opt.batchSize))
