@@ -1,4 +1,4 @@
-# pointnet.pytorch
+# PointNet.pytorch
 This repo is implementation for PointNet in pytorch https://arxiv.org/abs/1612.00593 in pytorch. The model is in file `pointnet.py`.
 
 
@@ -20,6 +20,7 @@ Sample segmentation result:
 ![seg](https://raw.githubusercontent.com/fxia22/pointnet.pytorch/master/misc/show3d.png?token=AE638Oy51TL2HDCaeCF273X_-Bsy6-E2ks5Y_BUzwA%3D%3D)
 
 
-#Links
--[Project Page](http://stanford.edu/~rqi/pointnet/)
--[Tensorflow implementation](https://github.com/charlesq34/pointnet)
+# Links
+
+- [Project Page](http://stanford.edu/~rqi/pointnet/)
+- [Tensorflow implementation](https://github.com/charlesq34/pointnet)
