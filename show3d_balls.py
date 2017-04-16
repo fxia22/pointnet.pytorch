@@ -32,14 +32,14 @@ def showpoints(xyz,c_gt=None, c_pred = None ,waittime=0,showrot=False,magnifyBlu
         c0=c_gt[:,0]
         c1=c_gt[:,1]
         c2=c_gt[:,2]
-    
-    
+
+
     if normalizecolor:
         c0/=(c0.max()+1e-14)/255.0
         c1/=(c1.max()+1e-14)/255.0
         c2/=(c2.max()+1e-14)/255.0
-        
-        
+
+
     c0=np.require(c0,'float32','C')
     c1=np.require(c1,'float32','C')
     c2=np.require(c2,'float32','C')
@@ -107,7 +107,7 @@ def showpoints(xyz,c_gt=None, c_pred = None ,waittime=0,showrot=False,magnifyBlu
             break
         elif cmd==ord('Q'):
             sys.exit(0)
-            
+
         if cmd==ord('t') or cmd == ord('p'):
             if cmd == ord('t'):
                 if c_gt is None:
@@ -134,9 +134,10 @@ def showpoints(xyz,c_gt=None, c_pred = None ,waittime=0,showrot=False,magnifyBlu
             c0=np.require(c0,'float32','C')
             c1=np.require(c1,'float32','C')
             c2=np.require(c2,'float32','C')
+            changed = True
 
-            
-            
+
+
         if cmd==ord('n'):
             zoom*=1.1
             changed=True
@@ -153,5 +154,5 @@ def showpoints(xyz,c_gt=None, c_pred = None ,waittime=0,showrot=False,magnifyBlu
     return cmd
 if __name__=='__main__':
     np.random.seed(100)
-    showpoints(np.random.randn(2500,3), c1 = np.random.uniform(0,1,size = (2500)))
+    showpoints(np.random.randn(2500,3))
 
