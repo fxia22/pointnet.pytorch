@@ -34,15 +34,15 @@ class STN3d(nn.Module):
     
     def forward(self, x):
         batchsize = x.size()[0]
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
         x = self.mp1(x)
         x = x.view(-1, 1024)
 
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.relu(self.fc3(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
 
         iden = Variable(torch.from_numpy(np.array([1,0,0,0,1,0,0,0,1]).astype(np.float32))).view(1,9).repeat(batchsize,1)
         if x.is_cuda:
@@ -68,9 +68,9 @@ class PointNetfeat(nn.Module):
         x = x.transpose(2,1)
         x = torch.bmm(x, trans)
         x = x.transpose(2,1)
-        x = self.conv1(x)
+        x = F.relu(self.conv1(x))
         pointfeat = x
-        x = self.conv2(x)
+        x = F.relu(self.conv2(x))
         x = self.conv3(x)
         x = self.mp1(x)
         x = x.view(-1, 1024)
@@ -91,9 +91,9 @@ class PointNetCls(nn.Module):
         self.relu = nn.ReLU()
     def forward(self, x):
         x, trans = self.feat(x)
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.relu(self.fc3(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
         return F.log_softmax(x), trans
 
 class PointNetDenseCls(nn.Module):
@@ -110,9 +110,9 @@ class PointNetDenseCls(nn.Module):
     def forward(self, x):
         batchsize = x.size()[0]
         x, trans = self.feat(x)
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
         x = self.conv4(x)
         x = x.transpose(2,1).contiguous()
         x = F.log_softmax(x.view(-1,self.k))
