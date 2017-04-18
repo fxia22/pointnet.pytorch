@@ -93,7 +93,7 @@ class PointNetCls(nn.Module):
         x, trans = self.feat(x)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
+        x = self.fc3(x)
         return F.log_softmax(x), trans
 
 class PointNetDenseCls(nn.Module):
