@@ -21,6 +21,7 @@ import torch.nn.functional as F
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--batchSize', type=int, default=32, help='input batch size')
+parser.add_argument('--num_points', type=int, default=2500, help='input batch size')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument('--nepoch', type=int, default=25, help='number of epochs to train for')
 parser.add_argument('--outf', type=str, default='cls',  help='output folder')
@@ -36,11 +37,11 @@ print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
-dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', classification = True)
+dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', classification = True, npoints = opt.num_points)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                           shuffle=True, num_workers=int(opt.workers))
 
-test_dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', classification = True, train = False)
+test_dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0', classification = True, train = False, npoints = opt.num_points)
 testdataloader = torch.utils.data.DataLoader(test_dataset, batch_size=opt.batchSize,
                                           shuffle=True, num_workers=int(opt.workers))
 
@@ -54,13 +55,13 @@ except OSError:
     pass
 
 
-classifier = PointNetCls(k = num_classes)
+classifier = PointNetCls(k = num_classes, num_points = opt.num_points)
 
 
 if opt.model != '':
     classifier.load_state_dict(torch.load(opt.model))
-    
-    
+
+
 optimizer = optim.SGD(classifier.parameters(), lr=0.01, momentum=0.9)
 classifier.cuda()
 
@@ -70,8 +71,8 @@ for epoch in range(opt.nepoch):
     for i, data in enumerate(dataloader, 0):
         points, target = data
         points, target = Variable(points), Variable(target[:,0])
-        points = points.transpose(2,1) 
-        points, target = points.cuda(), target.cuda()   
+        points = points.transpose(2,1)
+        points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
         pred, _ = classifier(points)
         loss = F.nll_loss(pred, target)
@@ -80,17 +81,17 @@ for epoch in range(opt.nepoch):
         pred_choice = pred.data.max(1)[1]
         correct = pred_choice.eq(target.data).cpu().sum()
         print('[%d: %d/%d] train loss: %f accuracy: %f' %(epoch, i, num_batch, loss.data[0], correct/float(opt.batchSize)))
-        
+
         if i % 10 == 0:
             j, data = enumerate(testdataloader, 0).next()
             points, target = data
             points, target = Variable(points), Variable(target[:,0])
-            points = points.transpose(2,1) 
-            points, target = points.cuda(), target.cuda()   
+            points = points.transpose(2,1)
+            points, target = points.cuda(), target.cuda()
             pred, _ = classifier(points)
             loss = F.nll_loss(pred, target)
             pred_choice = pred.data.max(1)[1]
             correct = pred_choice.eq(target.data).cpu().sum()
             print('[%d: %d/%d] %s loss: %f accuracy: %f' %(epoch, i, num_batch, blue('test'), loss.data[0], correct/float(opt.batchSize)))
-    
+
     torch.save(classifier.state_dict(), '%s/cls_model_%d.pth' % (opt.outf, epoch))

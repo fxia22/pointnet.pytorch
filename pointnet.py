@@ -15,7 +15,6 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import pdb
-import utils
 import torch.nn.functional as F
 
 
@@ -31,14 +30,14 @@ class STN3d(nn.Module):
         self.fc2 = nn.Linear(512, 256)
         self.fc3 = nn.Linear(256, 9)
         self.relu = nn.ReLU()
-        
+
         self.bn1 = nn.BatchNorm1d(64)
         self.bn2 = nn.BatchNorm1d(128)
         self.bn3 = nn.BatchNorm1d(1024)
         self.bn4 = nn.BatchNorm1d(512)
         self.bn5 = nn.BatchNorm1d(256)
-        
-        
+
+
     def forward(self, x):
         batchsize = x.size()[0]
         x = F.relu(self.bn1(self.conv1(x)))
@@ -57,12 +56,12 @@ class STN3d(nn.Module):
         x = x + iden
         x = x.view(-1, 3, 3)
         return x
-    
-    
+
+
 class PointNetfeat(nn.Module):
     def __init__(self, num_points = 2500, global_feat = True):
         super(PointNetfeat, self).__init__()
-        self.stn = STN3d()
+        self.stn = STN3d(num_points = num_points)
         self.conv1 = torch.nn.Conv1d(3, 64, 1)
         self.conv2 = torch.nn.Conv1d(64, 128, 1)
         self.conv3 = torch.nn.Conv1d(128, 1024, 1)
@@ -89,7 +88,7 @@ class PointNetfeat(nn.Module):
         else:
             x = x.view(-1, 1024, 1).repeat(1, 1, self.num_points)
             return torch.cat([x, pointfeat], 1), trans
-            
+
 class PointNetCls(nn.Module):
     def __init__(self, num_points = 2500, k = 2):
         super(PointNetCls, self).__init__()
@@ -121,7 +120,7 @@ class PointNetDenseCls(nn.Module):
         self.bn1 = nn.BatchNorm1d(512)
         self.bn2 = nn.BatchNorm1d(256)
         self.bn3 = nn.BatchNorm1d(128)
-        
+
     def forward(self, x):
         batchsize = x.size()[0]
         x, trans = self.feat(x)
@@ -133,14 +132,14 @@ class PointNetDenseCls(nn.Module):
         x = F.log_softmax(x.view(-1,self.k))
         x = x.view(batchsize, self.num_points, self.k)
         return x, trans
-        
+
 
 if __name__ == '__main__':
     sim_data = Variable(torch.rand(32,3,2500))
     trans = STN3d()
     out = trans(sim_data)
     print('stn', out.size())
-    
+
     pointfeat = PointNetfeat(global_feat=True)
     out, _ = pointfeat(sim_data)
     print('global feat', out.size())
@@ -148,11 +147,11 @@ if __name__ == '__main__':
     pointfeat = PointNetfeat(global_feat=False)
     out, _ = pointfeat(sim_data)
     print('point feat', out.size())
-    
+
     cls = PointNetCls(k = 5)
     out, _ = cls(sim_data)
     print('class', out.size())
-    
+
     seg = PointNetDenseCls(k = 3)
     out, _ = seg(sim_data)
     print('seg', out.size())
