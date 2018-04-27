@@ -24,29 +24,31 @@ import matplotlib.pyplot as plt
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--model', type=str, default = '',  help='model path')
+parser.add_argument('--num_points', type=int, default=2500, help='input batch size')
 
 
 opt = parser.parse_args()
 print (opt)
 
-test_dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0' , train = False, classification = True)
+test_dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_v0' , train = False, classification = True,  npoints = opt.num_points)
 
-testdataloader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle = False)
+testdataloader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle = True)
 
 
-classifier = PointNetCls(k = len(test_dataset.classes))
+classifier = PointNetCls(k = len(test_dataset.classes), num_points = opt.num_points)
 classifier.cuda()
 classifier.load_state_dict(torch.load(opt.model))
 classifier.eval()
 
+
 for i, data in enumerate(testdataloader, 0):
     points, target = data
-    points, target = Variable(points), Variable(target[:,0])
-    points = points.transpose(2,1)
+    points, target = Variable(points), Variable(target[:, 0])
+    points = points.transpose(2, 1)
     points, target = points.cuda(), target.cuda()
     pred, _ = classifier(points)
     loss = F.nll_loss(pred, target)
-    from IPython import embed; embed()
+
     pred_choice = pred.data.max(1)[1]
     correct = pred_choice.eq(target.data).cpu().sum()
     print('i:%d  loss: %f accuracy: %f' %(i, loss.data[0], correct/float(32)))

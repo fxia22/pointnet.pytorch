@@ -56,7 +56,7 @@ class PartDataset(data.Dataset):
                 self.datapath.append((item, fn[0], fn[1]))
 
 
-        self.classes = dict(zip(self.cat, range(len(self.cat))))
+        self.classes = dict(zip(sorted(self.cat), range(len(self.cat))))
         print(self.classes)
         self.num_seg_classes = 0
         if not self.classification:
