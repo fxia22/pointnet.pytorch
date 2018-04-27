@@ -83,7 +83,7 @@ for epoch in range(opt.nepoch):
         print('[%d: %d/%d] train loss: %f accuracy: %f' %(epoch, i, num_batch, loss.data[0], correct/float(opt.batchSize)))
 
         if i % 10 == 0:
-            j, data = enumerate(testdataloader, 0).next()
+            j, data = next(enumerate(testdataloader, 0))
             points, target = data
             points, target = Variable(points), Variable(target[:,0])
             points = points.transpose(2,1)

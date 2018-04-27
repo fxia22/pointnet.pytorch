@@ -46,6 +46,7 @@ for i, data in enumerate(testdataloader, 0):
     points, target = points.cuda(), target.cuda()
     pred, _ = classifier(points)
     loss = F.nll_loss(pred, target)
+    from IPython import embed; embed()
     pred_choice = pred.data.max(1)[1]
     correct = pred_choice.eq(target.data).cpu().sum()
     print('i:%d  loss: %f accuracy: %f' %(i, loss.data[0], correct/float(32)))

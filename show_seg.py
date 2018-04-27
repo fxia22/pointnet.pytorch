@@ -51,13 +51,14 @@ gt = cmap[seg.numpy() - 1, :]
 
 classifier = PointNetDenseCls(k = 4)
 classifier.load_state_dict(torch.load(opt.model))
+classifier.eval()
 
 point = point.transpose(1,0).contiguous()
 
 point = Variable(point.view(1, point.size()[0], point.size()[1]))
 pred, _ = classifier(point)
 
-pred_choice = pred.data.max(2)[1][0,:,0]
+pred_choice = pred.data.max(2)[1]
 #print(pred_choice.size())
 pred_color = cmap[pred_choice.numpy(), :]
 

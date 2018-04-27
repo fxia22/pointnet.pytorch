@@ -105,7 +105,7 @@ class PointNetCls(nn.Module):
         x = F.relu(self.bn1(self.fc1(x)))
         x = F.relu(self.bn2(self.fc2(x)))
         x = self.fc3(x)
-        return F.log_softmax(x), trans
+        return F.log_softmax(x, dim=-1), trans
 
 class PointNetDenseCls(nn.Module):
     def __init__(self, num_points = 2500, k = 2):
@@ -129,7 +129,7 @@ class PointNetDenseCls(nn.Module):
         x = F.relu(self.bn3(self.conv3(x)))
         x = self.conv4(x)
         x = x.transpose(2,1).contiguous()
-        x = F.log_softmax(x.view(-1,self.k))
+        x = F.log_softmax(x.view(-1,self.k), dim=-1)
         x = x.view(batchsize, self.num_points, self.k)
         return x, trans
 
