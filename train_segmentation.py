@@ -71,6 +71,7 @@ for epoch in range(opt.nepoch):
         points = points.transpose(2,1) 
         points, target = points.cuda(), target.cuda()   
         optimizer.zero_grad()
+        classifier = classifier.train()
         pred, _ = classifier(points)
         pred = pred.view(-1, num_classes)
         target = target.view(-1,1)[:,0] - 1
@@ -87,7 +88,8 @@ for epoch in range(opt.nepoch):
             points, target = data
             points, target = Variable(points), Variable(target)
             points = points.transpose(2,1) 
-            points, target = points.cuda(), target.cuda()   
+            points, target = points.cuda(), target.cuda()
+            classifier = classifier.eval()
             pred, _ = classifier(points)
             pred = pred.view(-1, num_classes)
             target = target.view(-1,1)[:,0] - 1

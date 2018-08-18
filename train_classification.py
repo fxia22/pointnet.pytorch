@@ -74,6 +74,7 @@ for epoch in range(opt.nepoch):
         points = points.transpose(2,1)
         points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
+        classifier = classifier.train()
         pred, _ = classifier(points)
         loss = F.nll_loss(pred, target)
         loss.backward()
@@ -88,6 +89,7 @@ for epoch in range(opt.nepoch):
             points, target = Variable(points), Variable(target[:,0])
             points = points.transpose(2,1)
             points, target = points.cuda(), target.cuda()
+            classifier = classifier.eval()
             pred, _ = classifier(points)
             loss = F.nll_loss(pred, target)
             pred_choice = pred.data.max(1)[1]
