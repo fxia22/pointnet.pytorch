@@ -8,7 +8,6 @@ import torch
 import json
 import codecs
 import numpy as np
-import progressbar
 import sys
 import torchvision.transforms as transforms
 import argparse
