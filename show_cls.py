@@ -50,4 +50,4 @@ for i, data in enumerate(testdataloader, 0):
 
     pred_choice = pred.data.max(1)[1]
     correct = pred_choice.eq(target.data).cpu().sum()
-    print('i:%d  loss: %f accuracy: %f' %(i, loss.data[0], correct/float(32)))
+    print('i:%d  loss: %f accuracy: %f' % (i, loss.data.item(), correct / float(32)))
