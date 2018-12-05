@@ -34,8 +34,7 @@ test_dataset = PartDataset(root = 'shapenetcore_partanno_segmentation_benchmark_
 
 testdataloader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle = True)
 
-
-classifier = PointNetCls(k = len(test_dataset.classes), num_points = opt.num_points)
+classifier = PointNetCls(k=len(test_dataset.classes))
 classifier.cuda()
 classifier.load_state_dict(torch.load(opt.model))
 classifier.eval()

@@ -55,8 +55,7 @@ except OSError:
     pass
 
 
-classifier = PointNetCls(k = num_classes, num_points = opt.num_points)
-
+classifier = PointNetCls(k=num_classes)
 
 if opt.model != '':
     classifier.load_state_dict(torch.load(opt.model))
