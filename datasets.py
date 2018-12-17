@@ -1,21 +1,17 @@
 from __future__ import print_function
 import torch.utils.data as data
-from PIL import Image
 import os
 import os.path
-import errno
 import torch
-import json
-import codecs
 import numpy as np
-import sys
-import torchvision.transforms as transforms
-import argparse
-import json
-
 
 class PartDataset(data.Dataset):
-    def __init__(self, root, npoints = 2500, classification = False, class_choice = None, train = True):
+    def __init__(self,
+                 root,
+                 npoints=2500,
+                 classification=False,
+                 class_choice=None,
+                 train=True):
         self.npoints = npoints
         self.root = root
         self.catfile = os.path.join(self.root, 'synsetoffset2category.txt')
@@ -28,8 +24,8 @@ class PartDataset(data.Dataset):
                 ls = line.strip().split()
                 self.cat[ls[0]] = ls[1]
         #print(self.cat)
-        if not class_choice is  None:
-            self.cat = {k:v for k,v in self.cat.items() if k in class_choice}
+        if not class_choice is None:
+            self.cat = {k: v for k, v in self.cat.items() if k in class_choice}
 
         self.meta = {}
         for item in self.cat:
@@ -59,7 +55,7 @@ class PartDataset(data.Dataset):
         print(self.classes)
         self.num_seg_classes = 0
         if not self.classification:
-            for i in range(len(self.datapath)//50):
+            for i in range(len(self.datapath) // 50):
                 l = len(np.unique(np.loadtxt(self.datapath[i][-1]).astype(np.uint8)))
                 if l > self.num_seg_classes:
                     self.num_seg_classes = l
