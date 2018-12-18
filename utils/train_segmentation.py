@@ -7,8 +7,8 @@ import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 from torch.autograd import Variable
-from datasets import PartDataset
-from pointnet import PointNetDenseCls
+from pointnet.dataset import PartDataset
+from pointnet.model import PointNetDenseCls
 import torch.nn.functional as F
 
 

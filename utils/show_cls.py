@@ -4,8 +4,8 @@ import torch
 import torch.nn.parallel
 import torch.utils.data
 from torch.autograd import Variable
-from datasets import PartDataset
-from pointnet import PointNetCls
+from pointnet.dataset import PartDataset
+from pointnet.model import PointNetCls
 import torch.nn.functional as F
 
 
