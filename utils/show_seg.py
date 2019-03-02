@@ -17,34 +17,31 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--idx', type=int, default=0, help='model index')
-
-
+parser.add_argument('--dataset', type=str, default='', help='dataset path')
+parser.add_argument('--class_choice', type=str, default='', help='class choice')
 
 opt = parser.parse_args()
 print(opt)
 
 d = PartDataset(
-    root='shapenetcore_partanno_segmentation_benchmark_v0',
-    class_choice=['Airplane'],
+    root=opt.dataset,
+    class_choice=[opt.class_choice],
     train=False)
 
 idx = opt.idx
 
 print("model %d/%d" % (idx, len(d)))
-
 point, seg = d[idx]
 print(point.size(), seg.size())
-
 point_np = point.numpy()
-
-
 
 cmap = plt.cm.get_cmap("hsv", 10)
 cmap = np.array([cmap(i) for i in range(10)])[:, :3]
 gt = cmap[seg.numpy() - 1, :]
 
-classifier = PointNetDenseCls(k=4)
-classifier.load_state_dict(torch.load(opt.model))
+state_dict = torch.load(opt.model)
+classifier = PointNetDenseCls(k= state_dict['conv4.weight'].size()[0] )
+classifier.load_state_dict(state_dict)
 classifier.eval()
 
 point = point.transpose(1, 0).contiguous()
