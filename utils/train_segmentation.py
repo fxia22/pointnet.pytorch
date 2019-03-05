@@ -48,7 +48,8 @@ test_dataset = ShapeNetDataset(
     root=opt.dataset,
     classification=False,
     class_choice=[opt.class_choice],
-    split='test')
+    split='test',
+    data_augmentation=False)
 testdataloader = torch.utils.data.DataLoader(
     test_dataset,
     batch_size=opt.batchSize,

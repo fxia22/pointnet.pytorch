@@ -40,7 +40,7 @@ cmap = np.array([cmap(i) for i in range(10)])[:, :3]
 gt = cmap[seg.numpy() - 1, :]
 
 state_dict = torch.load(opt.model)
-classifier = PointNetDenseCls(k= state_dict['conv4.weight'].size()[0] )
+classifier = PointNetDenseCls(k= state_dict['conv4.weight'].size()[0])
 classifier.load_state_dict(state_dict)
 classifier.eval()
 

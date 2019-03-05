@@ -46,16 +46,19 @@ if opt.dataset_type == 'shapenet':
         root=opt.dataset,
         classification=True,
         split='test',
-        npoints=opt.num_points)
+        npoints=opt.num_points,
+        data_augmentation=False)
 elif opt.dataset_type == 'modelnet40':
     dataset = ModelNetDataset(
         root=opt.dataset,
-        npoints=opt.num_points)
+        npoints=opt.num_points,
+        split='trainval')
 
     test_dataset = ModelNetDataset(
         root=opt.dataset,
         split='test',
-        npoints=opt.num_points)
+        npoints=opt.num_points,
+        data_augmentation=False)
 else:
     exit('wrong dataset type')
 
