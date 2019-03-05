@@ -6,7 +6,7 @@ import torch
 import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
-from pointnet.dataset import ShapeNetDataset
+from pointnet.dataset import ShapeNetDataset, ModelNetDataset
 from pointnet.model import PointNetCls
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -24,6 +24,7 @@ parser.add_argument(
 parser.add_argument('--outf', type=str, default='cls', help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str, required=True, help="dataset path")
+parser.add_argument('--dataset_type', type=str, default='shapenet', help="dataset type shapenet|modelnet40")
 
 opt = parser.parse_args()
 print(opt)
@@ -35,26 +36,41 @@ print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
-dataset = ShapeNetDataset(
-    root=opt.dataset,
-    classification=True,
-    npoints=opt.num_points)
+if opt.dataset_type == 'shapenet':
+    dataset = ShapeNetDataset(
+        root=opt.dataset,
+        classification=True,
+        npoints=opt.num_points)
+
+    test_dataset = ShapeNetDataset(
+        root=opt.dataset,
+        classification=True,
+        split='test',
+        npoints=opt.num_points)
+elif opt.dataset_type == 'modelnet40':
+    dataset = ModelNetDataset(
+        root=opt.dataset,
+        npoints=opt.num_points)
+
+    test_dataset = ModelNetDataset(
+        root=opt.dataset,
+        split='test',
+        npoints=opt.num_points)
+else:
+    exit('wrong dataset type')
+
+
 dataloader = torch.utils.data.DataLoader(
     dataset,
     batch_size=opt.batchSize,
     shuffle=True,
     num_workers=int(opt.workers))
 
-test_dataset = ShapeNetDataset(
-    root=opt.dataset,
-    classification=True,
-    split='test',
-    npoints=opt.num_points)
 testdataloader = torch.utils.data.DataLoader(
-    test_dataset,
-    batch_size=opt.batchSize,
-    shuffle=True,
-    num_workers=int(opt.workers))
+        test_dataset,
+        batch_size=opt.batchSize,
+        shuffle=True,
+        num_workers=int(opt.workers))
 
 print(len(dataset), len(test_dataset))
 num_classes = len(dataset.classes)
