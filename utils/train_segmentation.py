@@ -6,7 +6,7 @@ import torch
 import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
-from pointnet.dataset import PartDataset
+from pointnet.dataset import ShapeNetDataset
 from pointnet.model import PointNetDenseCls
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -34,7 +34,7 @@ print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
-dataset = PartDataset(
+dataset = ShapeNetDataset(
     root=opt.dataset,
     classification=False,
     class_choice=[opt.class_choice])
@@ -44,11 +44,11 @@ dataloader = torch.utils.data.DataLoader(
     shuffle=True,
     num_workers=int(opt.workers))
 
-test_dataset = PartDataset(
+test_dataset = ShapeNetDataset(
     root=opt.dataset,
     classification=False,
     class_choice=[opt.class_choice],
-    train=False)
+    split='test')
 testdataloader = torch.utils.data.DataLoader(
     test_dataset,
     batch_size=opt.batchSize,
@@ -125,13 +125,13 @@ for i,data in tqdm(enumerate(testdataloader, 0)):
     target_np = target.cpu().data.numpy() - 1
 
     for shape_idx in range(target_np.shape[0]):
-        parts = np.unique(target_np[shape_idx])
+        parts = range(num_classes)#np.unique(target_np[shape_idx])
         part_ious = []
         for part in parts:
             I = np.sum(np.logical_and(pred_np[shape_idx] == part, target_np[shape_idx] == part))
             U = np.sum(np.logical_or(pred_np[shape_idx] == part, target_np[shape_idx] == part))
             if U == 0:
-                iou = 0
+                iou = 1 #If the union of groundtruth and prediction points is empty, then count part IoU as 1
             else:
                 iou = I / float(U)
             part_ious.append(iou)

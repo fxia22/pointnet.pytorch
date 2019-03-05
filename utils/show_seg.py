@@ -6,7 +6,7 @@ import torch
 import torch.nn.parallel
 import torch.utils.data
 from torch.autograd import Variable
-from pointnet.dataset import PartDataset
+from pointnet.dataset import ShapeNetDataset
 from pointnet.model import PointNetDenseCls
 import matplotlib.pyplot as plt
 
@@ -23,7 +23,7 @@ parser.add_argument('--class_choice', type=str, default='', help='class choice')
 opt = parser.parse_args()
 print(opt)
 
-d = PartDataset(
+d = ShapeNetDataset(
     root=opt.dataset,
     class_choice=[opt.class_choice],
     train=False)

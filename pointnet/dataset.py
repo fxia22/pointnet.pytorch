@@ -5,23 +5,59 @@ import os.path
 import torch
 import numpy as np
 import sys
+from tqdm import tqdm 
+import json
 
-class PartDataset(data.Dataset):
+def get_segmentation_classes(root):
+    catfile = os.path.join(root, 'synsetoffset2category.txt')
+    cat = {}
+    meta = {}
+
+    with open(catfile, 'r') as f:
+        for line in f:
+            ls = line.strip().split()
+            cat[ls[0]] = ls[1]
+
+    for item in cat:
+        dir_seg = os.path.join(root, cat[item], 'points_label')
+        dir_point = os.path.join(root, cat[item], 'points')
+        fns = sorted(os.listdir(dir_point))
+        meta[item] = []
+        for fn in fns:
+            token = (os.path.splitext(os.path.basename(fn))[0])
+            meta[item].append((os.path.join(dir_point, token + '.pts'), os.path.join(dir_seg, token + '.seg')))
+    
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'num_seg_classes.txt'), 'w') as f:
+        for item in cat:
+            datapath = []
+            num_seg_classes = 0
+            for fn in meta[item]:
+                datapath.append((item, fn[0], fn[1]))
+
+            for i in tqdm(range(len(datapath))):
+                l = len(np.unique(np.loadtxt(datapath[i][-1]).astype(np.uint8)))
+                if l > num_seg_classes:
+                    num_seg_classes = l
+
+            print("category {} num segmentation classes {}".format(item, num_seg_classes))
+            f.write("{}\t{}\n".format(item, num_seg_classes))
+
+class ShapeNetDataset(data.Dataset):
     def __init__(self,
                  root,
                  npoints=2500,
                  classification=False,
                  class_choice=None,
-                 train=True,
+                 split='train',
                  data_augmentation=True):
         self.npoints = npoints
         self.root = root
         self.catfile = os.path.join(self.root, 'synsetoffset2category.txt')
         self.cat = {}
         self.data_augmentation = data_augmentation
-
         self.classification = classification
-
+        self.seg_classes = {}
+        
         with open(self.catfile, 'r') as f:
             for line in f:
                 ls = line.strip().split()
@@ -30,40 +66,34 @@ class PartDataset(data.Dataset):
         if not class_choice is None:
             self.cat = {k: v for k, v in self.cat.items() if k in class_choice}
 
-        self.meta = {}
-        for item in self.cat:
-            #print('category', item)
-            self.meta[item] = []
-            dir_point = os.path.join(self.root, self.cat[item], 'points')
-            dir_seg = os.path.join(self.root, self.cat[item], 'points_label')
-            #print(dir_point, dir_seg)
-            fns = sorted(os.listdir(dir_point))
-            if train:
-                fns = fns[:int(len(fns) * 0.9)]
-            else:
-                fns = fns[int(len(fns) * 0.9):]
+        self.id2cat = {v: k for k, v in self.cat.items()}
 
-            #print(os.path.basename(fns))
-            for fn in fns:
-                token = (os.path.splitext(os.path.basename(fn))[0])
-                self.meta[item].append((os.path.join(dir_point, token + '.pts'), os.path.join(dir_seg, token + '.seg')))
+        self.meta = {}
+        splitfile = os.path.join(self.root, 'train_test_split', 'shuffled_{}_file_list.json'.format(split))
+        #from IPython import embed; embed()
+        filelist = json.load(open(splitfile, 'r'))
+        for item in self.cat:
+            self.meta[item] = []
+
+        for file in filelist:
+            _, category, uuid = file.split('/')
+            if category in self.cat.values():
+                self.meta[self.id2cat[category]].append((os.path.join(self.root, category, 'points', uuid+'.pts'),
+                                        os.path.join(self.root, category, 'points_label', uuid+'.seg')))
 
         self.datapath = []
         for item in self.cat:
             for fn in self.meta[item]:
                 self.datapath.append((item, fn[0], fn[1]))
 
-
         self.classes = dict(zip(sorted(self.cat), range(len(self.cat))))
         print(self.classes)
-        self.num_seg_classes = 0
-        if not self.classification:
-            for i in range(len(self.datapath) // 50):
-                l = len(np.unique(np.loadtxt(self.datapath[i][-1]).astype(np.uint8)))
-                if l > self.num_seg_classes:
-                    self.num_seg_classes = l
-        #print(self.num_seg_classes)
-
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'num_seg_classes.txt'), 'r') as f:
+            for line in f:
+                ls = line.strip().split()
+                self.seg_classes[ls[0]] = int(ls[1])
+        self.num_seg_classes = self.seg_classes[list(self.cat.keys())[0]]
+        print(self.seg_classes, self.num_seg_classes)
 
     def __getitem__(self, index):
         fn = self.datapath[index]
@@ -103,12 +133,14 @@ class PartDataset(data.Dataset):
 if __name__ == '__main__':
     datapath = sys.argv[1]
     print('test')
-    d = PartDataset(root = datapath, class_choice = ['Chair'])
+    d = ShapeNetDataset(root = datapath, class_choice = ['Chair'])
     print(len(d))
     ps, seg = d[0]
     print(ps.size(), ps.type(), seg.size(),seg.type())
 
-    d = PartDataset(root = datapath, classification = True)
+    d = ShapeNetDataset(root = datapath, classification = True)
     print(len(d))
     ps, cls = d[0]
     print(ps.size(), ps.type(), cls.size(),cls.type())
+
+    #get_segmentation_classes(datapath)

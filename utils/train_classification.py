@@ -6,7 +6,7 @@ import torch
 import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
-from pointnet.dataset import PartDataset
+from pointnet.dataset import ShapeNetDataset
 from pointnet.model import PointNetCls
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -35,7 +35,7 @@ print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
-dataset = PartDataset(
+dataset = ShapeNetDataset(
     root=opt.dataset,
     classification=True,
     npoints=opt.num_points)
@@ -45,10 +45,10 @@ dataloader = torch.utils.data.DataLoader(
     shuffle=True,
     num_workers=int(opt.workers))
 
-test_dataset = PartDataset(
+test_dataset = ShapeNetDataset(
     root=opt.dataset,
     classification=True,
-    train=False,
+    split='test',
     npoints=opt.num_points)
 testdataloader = torch.utils.data.DataLoader(
     test_dataset,

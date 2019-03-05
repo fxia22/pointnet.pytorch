@@ -4,7 +4,7 @@ import torch
 import torch.nn.parallel
 import torch.utils.data
 from torch.autograd import Variable
-from pointnet.dataset import PartDataset
+from pointnet.dataset import ShapeNetDataset
 from pointnet.model import PointNetCls
 import torch.nn.functional as F
 
@@ -20,7 +20,7 @@ parser.add_argument('--num_points', type=int, default=2500, help='input batch si
 opt = parser.parse_args()
 print(opt)
 
-test_dataset = PartDataset(
+test_dataset = ShapeNetDataset(
     root='shapenetcore_partanno_segmentation_benchmark_v0',
     train=False,
     classification=True,
