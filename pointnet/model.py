@@ -146,6 +146,7 @@ class PointNetCls(nn.Module):
         x = self.fc3(x)
         return F.log_softmax(x, dim=1), trans, trans_feat
 
+
 class PointNetDenseCls(nn.Module):
     def __init__(self, k = 2, feature_transform=False):
         super(PointNetDenseCls, self).__init__()
