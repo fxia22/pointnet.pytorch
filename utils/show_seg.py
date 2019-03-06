@@ -26,7 +26,8 @@ print(opt)
 d = ShapeNetDataset(
     root=opt.dataset,
     class_choice=[opt.class_choice],
-    train=False)
+    split='test',
+    data_augmentation=False)
 
 idx = opt.idx
 
@@ -47,7 +48,7 @@ classifier.eval()
 point = point.transpose(1, 0).contiguous()
 
 point = Variable(point.view(1, point.size()[0], point.size()[1]))
-pred, _ = classifier(point)
+pred, _, _ = classifier(point)
 pred_choice = pred.data.max(2)[1]
 print(pred_choice)
 

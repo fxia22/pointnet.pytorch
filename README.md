@@ -25,10 +25,9 @@ python train_classification.py --dataset <dataset path> --nepoch=<number epochs>
 python train_segmentation.py --dataset <dataset path> --nepoch=<number epochs> 
 ```
 
-# Performance
+Use `--feature_transform` to use feature transform.
 
-Sample segmentation result:
-![seg](https://raw.githubusercontent.com/fxia22/pointnet.pytorch/master/misc/show3d.png?token=AE638Oy51TL2HDCaeCF273X_-Bsy6-E2ks5Y_BUzwA%3D%3D)
+# Performance
 
 ## Classification performance
 
@@ -37,7 +36,7 @@ On ModelNet40:
 |  | Overall Acc | 
 | :---: | :---: | 
 | Original implementation | 89.2 | 
-| this implementation(w/o feature transform) | TBA | 
+| this implementation(w/o feature transform) | 86.4 | 
 | this implementation(w/ feature transform) | TBA | 
 
 On [A subset of shapenet](http://web.stanford.edu/~ericyi/project_page/part_annotation/index.html)
@@ -59,6 +58,9 @@ Segmentation on  [A subset of shapenet](http://web.stanford.edu/~ericyi/project_
 | this implementation(w/ feature transform) | TBA | 
 
 Note that this implementation trains each class separately, so classes with fewer data will have slightly lower performance than reference implementation.
+
+Sample segmentation result:
+![seg](https://raw.githubusercontent.com/fxia22/pointnet.pytorch/master/misc/show3d.png?token=AE638Oy51TL2HDCaeCF273X_-Bsy6-E2ks5Y_BUzwA%3D%3D)
 
 # Links
 

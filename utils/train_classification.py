@@ -7,7 +7,7 @@ import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 from pointnet.dataset import ShapeNetDataset, ModelNetDataset
-from pointnet.model import PointNetCls
+from pointnet.model import PointNetCls, feature_transform_reguliarzer
 import torch.nn.functional as F
 from tqdm import tqdm
 
@@ -25,6 +25,7 @@ parser.add_argument('--outf', type=str, default='cls', help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str, required=True, help="dataset path")
 parser.add_argument('--dataset_type', type=str, default='shapenet', help="dataset type shapenet|modelnet40")
+parser.add_argument('--feature_transform', action='store_true', help="use feature transform")
 
 opt = parser.parse_args()
 print(opt)
@@ -84,7 +85,7 @@ try:
 except OSError:
     pass
 
-classifier = PointNetCls(k=num_classes)
+classifier = PointNetCls(k=num_classes, feature_transform=opt.feature_transform)
 
 if opt.model != '':
     classifier.load_state_dict(torch.load(opt.model))
@@ -105,8 +106,10 @@ for epoch in range(opt.nepoch):
         points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
-        pred, _ = classifier(points)
+        pred, trans, trans_feat = classifier(points)
         loss = F.nll_loss(pred, target)
+        if opt.feature_transform:
+            loss += feature_transform_reguliarzer(trans_feat) * 0.001
         loss.backward()
         optimizer.step()
         pred_choice = pred.data.max(1)[1]
@@ -120,7 +123,7 @@ for epoch in range(opt.nepoch):
             points = points.transpose(2, 1)
             points, target = points.cuda(), target.cuda()
             classifier = classifier.eval()
-            pred, _ = classifier(points)
+            pred, _, _ = classifier(points)
             loss = F.nll_loss(pred, target)
             pred_choice = pred.data.max(1)[1]
             correct = pred_choice.eq(target.data).cpu().sum()
@@ -136,7 +139,7 @@ for i,data in tqdm(enumerate(testdataloader, 0)):
     points = points.transpose(2, 1)
     points, target = points.cuda(), target.cuda()
     classifier = classifier.eval()
-    pred, _ = classifier(points)
+    pred, _, _ = classifier(points)
     pred_choice = pred.data.max(1)[1]
     correct = pred_choice.eq(target.data).cpu().sum()
     total_correct += correct.item()

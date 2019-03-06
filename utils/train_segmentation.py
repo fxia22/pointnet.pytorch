@@ -7,7 +7,7 @@ import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 from pointnet.dataset import ShapeNetDataset
-from pointnet.model import PointNetDenseCls
+from pointnet.model import PointNetDenseCls, feature_transform_reguliarzer
 import torch.nn.functional as F
 from tqdm import tqdm
 import numpy as np
@@ -24,7 +24,7 @@ parser.add_argument('--outf', type=str, default='seg', help='output folder')
 parser.add_argument('--model', type=str, default='', help='model path')
 parser.add_argument('--dataset', type=str, required=True, help="dataset path")
 parser.add_argument('--class_choice', type=str, default='Chair', help="class_choice")
-
+parser.add_argument('--feature_transform', action='store_true', help="use feature transform")
 
 opt = parser.parse_args()
 print(opt)
@@ -66,7 +66,7 @@ except OSError:
 
 blue = lambda x: '\033[94m' + x + '\033[0m'
 
-classifier = PointNetDenseCls(k=num_classes)
+classifier = PointNetDenseCls(k=num_classes, feature_transform=opt.feature_transform)
 
 if opt.model != '':
     classifier.load_state_dict(torch.load(opt.model))
@@ -85,11 +85,13 @@ for epoch in range(opt.nepoch):
         points, target = points.cuda(), target.cuda()
         optimizer.zero_grad()
         classifier = classifier.train()
-        pred, _ = classifier(points)
+        pred, trans, trans_feat = classifier(points)
         pred = pred.view(-1, num_classes)
         target = target.view(-1, 1)[:, 0] - 1
         #print(pred.size(), target.size())
         loss = F.nll_loss(pred, target)
+        if opt.feature_transform:
+            loss += feature_transform_reguliarzer(trans_feat) * 0.001
         loss.backward()
         optimizer.step()
         pred_choice = pred.data.max(1)[1]
@@ -102,7 +104,7 @@ for epoch in range(opt.nepoch):
             points = points.transpose(2, 1)
             points, target = points.cuda(), target.cuda()
             classifier = classifier.eval()
-            pred, _ = classifier(points)
+            pred, _, _ = classifier(points)
             pred = pred.view(-1, num_classes)
             target = target.view(-1, 1)[:, 0] - 1
             loss = F.nll_loss(pred, target)
@@ -119,7 +121,7 @@ for i,data in tqdm(enumerate(testdataloader, 0)):
     points = points.transpose(2, 1)
     points, target = points.cuda(), target.cuda()
     classifier = classifier.eval()
-    pred, _ = classifier(points)
+    pred, _, _ = classifier(points)
     pred_choice = pred.data.max(2)[1]
 
     pred_np = pred_choice.cpu().data.numpy()
