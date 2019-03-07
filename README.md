@@ -55,6 +55,7 @@ Segmentation on  [A subset of shapenet](http://web.stanford.edu/~ericyi/project_
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | 
 | Original implementation |  83.4 | 78.7 | 82.5| 74.9 |89.6| 73.0| 91.5| 85.9| 80.8| 95.3| 65.2| 93.0| 81.2| 57.9| 72.8| 80.6| 
 | this implementation(w/o feature transform) | 73.5 | 71.3 | 64.3 | 61.1 | 87.2 | 69.5 | 86.1|81.6| 77.4|92.7|41.3|86.5|78.2|41.2|61.0|81.1|
+| this implementation(w/ feature transform) |  |  |  |  | 87.9 |  | | | | | | | | | |81.4|
 
 Note that this implementation trains each class separately, so classes with fewer data will have slightly lower performance than reference implementation.
 
