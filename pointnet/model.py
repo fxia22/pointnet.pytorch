@@ -180,7 +180,7 @@ def feature_transform_reguliarzer(trans):
     I = torch.eye(d)[None, :, :]
     if trans.is_cuda:
         I = I.cuda()
-    loss = torch.mean(torch.norm(torch.bmm(trans, trans.transpose(2,1) - I), dim=(1,2)))
+    loss = torch.mean(torch.norm(torch.bmm(trans, trans.transpose(2,1)) - I, dim=(1,2)))
     return loss
 
 if __name__ == '__main__':
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     out = trans(sim_data_64d)
     print('stn64d', out.size())
     print('loss', feature_transform_reguliarzer(out))
-    
+
     pointfeat = PointNetfeat(global_feat=True)
     out, _, _ = pointfeat(sim_data)
     print('global feat', out.size())
