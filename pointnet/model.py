@@ -174,7 +174,7 @@ class PointNetDenseCls(nn.Module):
         x = x.view(batchsize, n_pts, self.k)
         return x, trans, trans_feat
 
-def feature_transform_reguliarzer(trans):
+def feature_transform_regularizer(trans):
     d = trans.size()[1]
     batchsize = trans.size()[0]
     I = torch.eye(d)[None, :, :]
@@ -188,13 +188,13 @@ if __name__ == '__main__':
     trans = STN3d()
     out = trans(sim_data)
     print('stn', out.size())
-    print('loss', feature_transform_reguliarzer(out))
+    print('loss', feature_transform_regularizer(out))
 
     sim_data_64d = Variable(torch.rand(32, 64, 2500))
     trans = STNkd(k=64)
     out = trans(sim_data_64d)
     print('stn64d', out.size())
-    print('loss', feature_transform_reguliarzer(out))
+    print('loss', feature_transform_regularizer(out))
 
     pointfeat = PointNetfeat(global_feat=True)
     out, _, _ = pointfeat(sim_data)

@@ -7,7 +7,7 @@ import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 from pointnet.dataset import ShapeNetDataset, ModelNetDataset
-from pointnet.model import PointNetCls, feature_transform_reguliarzer
+from pointnet.model import PointNetCls, feature_transform_regularizer
 import torch.nn.functional as F
 from tqdm import tqdm
 
@@ -109,7 +109,7 @@ for epoch in range(opt.nepoch):
         pred, trans, trans_feat = classifier(points)
         loss = F.nll_loss(pred, target)
         if opt.feature_transform:
-            loss += feature_transform_reguliarzer(trans_feat) * 0.001
+            loss += feature_transform_regularizer(trans_feat) * 0.001
         loss.backward()
         optimizer.step()
         pred_choice = pred.data.max(1)[1]
