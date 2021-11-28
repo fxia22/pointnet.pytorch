@@ -2,7 +2,8 @@ SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH/..
-wget https://shapenet.cs.stanford.edu/ericyi/shapenetcore_partanno_segmentation_benchmark_v0.zip --no-check-certificate
-unzip shapenetcore_partanno_segmentation_benchmark_v0.zip
-rm shapenetcore_partanno_segmentation_benchmark_v0.zip
-cd -
+wget http://modelnet.cs.princeton.edu/ModelNet40.zip --no-check-certificate
+unzip ModelNet40.zip
+# rm ModelNet40.zip # in case you need to reuse
+cd ..
+cp test.txt trainval.txt ModelNet40/
