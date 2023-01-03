@@ -18,6 +18,12 @@ bash build.sh #build C++ code for visualization
 bash download.sh #download dataset
 ```
 
+Convert ModelNet40 Dataset for training (.off to .ply)
+```
+cd ModelNet40
+python convert.py
+```
+
 Training 
 ```
 cd utils
