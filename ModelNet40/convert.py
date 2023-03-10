@@ -8,6 +8,7 @@ from tqdm import tqdm, trange
 import time
 import pdb
 import gc
+import argparse
 
 
 
@@ -123,8 +124,15 @@ def check(p, chunksize, num_cpu=None):
 
 
 if __name__ == '__main__':
-
-    num_cpu = multiprocessing.cpu_count()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--MutiThreads', type=bool, default=None, metavar='N',
+                        help='Switch MutiThreads')
+    args = parser.parse_args()
+    
+    if(args.MutiThreads):
+        num_cpu = multiprocessing.cpu_count()
+    else:
+        num_cpu = None
     chunksize = 100
     currPATH = os.getcwd().replace('\\','/')
     p = Path(currPATH)
