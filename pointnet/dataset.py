@@ -1,8 +1,10 @@
-from __future__ import print_function
+# from __future__ import print_function
 import torch.utils.data as data
 import os
 import os.path
 import torch
+import meshio
+from pathlib import Path
 import numpy as np
 import sys
 from tqdm import tqdm 
@@ -145,7 +147,8 @@ class ModelNetDataset(data.Dataset):
                  root,
                  npoints=2500,
                  split='train',
-                 data_augmentation=True):
+                 data_augmentation=True,
+                 convert_off_to_ply=True):
         self.npoints = npoints
         self.root = root
         self.split = split
@@ -163,6 +166,29 @@ class ModelNetDataset(data.Dataset):
 
         print(self.cat)
         self.classes = list(self.cat.keys())
+
+        if convert_off_to_ply:
+            p = Path(self.root)
+            print('searching path', p, 'to convert .off files to .ply')
+            l = list(p.glob('**/*.off'))
+            for in_file in l:
+                # print(in_file)
+                with in_file.open() as f:
+                    # some OFF files in original dataset had OFF345 345 344 where 
+                    # OFF collided with the number. Needs \n
+                    lines = f.readlines()
+                if lines[0] != 'OFF\n':
+                    # print(lines[0:3])
+                    lines[0] = lines[0][0:3] + '\n' + lines[0][3:]
+                    # print(lines[0:3])
+                    with in_file.open('w') as f:
+                        lines = "".join(lines)
+                        f.write(lines)
+
+                mesh = meshio.read(in_file, file_format="off")
+                out_file = in_file.replace(in_file.with_suffix('.ply'))
+                # print(out_file)
+                mesh.write(out_file, file_format='ply')
 
     def __getitem__(self, index):
         fn = self.fns[index]
