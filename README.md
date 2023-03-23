@@ -1,5 +1,7 @@
 # PointNet.pytorch
-This repo is implementation for PointNet(https://arxiv.org/abs/1612.00593) in pytorch. The model is in `pointnet/model.py`.
+This repo offer a patch for official PointNet.PyTorch ( https://github.com/charlesq34/pointnet ).
+Patch for ModelNet40 .off format to .ply format.
+convert.py including ModelNet40 folder.
 
 It is tested with pytorch-1.0.
 
@@ -18,6 +20,14 @@ bash build.sh #build C++ code for visualization
 bash download.sh #download dataset
 ```
 
+Convert ModelNet40 Dataset for training (.off to .ply)
+```
+cd ModelNet40
+python convert.py --MutiThreads=True # if u want use single process, pls disable here.
+                                     # On my intel i7-11700, muti take 11 mins, 
+                                                             single take about 27 mins.
+```
+
 Training 
 ```
 cd utils
@@ -26,6 +36,40 @@ python train_segmentation.py --dataset <dataset path> --nepoch=<number epochs>
 ```
 
 Use `--feature_transform` to use feature transform.
+
+   
+      
+
+# Data tree
+
+.
+├── misc  
+├── ModelNet40  
+│   ├── <font color=DodgerBlue>convert.py</font>    
+│   ├── <font color=DodgerBlue>test.txt</font>  
+│   ├── <font color=DodgerBlue>train.txt</font>  
+│   ├── <font color=DodgerBlue>trainval.txt</font>  
+│   ├── <font color=DodgerBlue>val.txt</font>  
+│   ├── airplane    
+│   │   ├── test  
+│   │   └── train  
+│   ├── bathtub  
+│   │   ├── test  
+│   │   └── train  
+│   ├── bed  
+│   │   ├── test  
+│   │   └── train  
+│   ├── bench  
+│   │   ├── test  
+│   │   └── train  
+|   └──── .   
+|     └── .  
+|     └── .  
+├── pointnet  
+├── pointnet.egg-info  
+├── scripts  
+└── utils  
+
 
 # Performance
 
@@ -66,3 +110,20 @@ Sample segmentation result:
 
 - [Project Page](http://stanford.edu/~rqi/pointnet/)
 - [Tensorflow implementation](https://github.com/charlesq34/pointnet)
+
+
+# Murmur
+
+這包的主要貢獻是把 ModelNet40 的 .off 檔案換成 .ply 格式，  
+因為我不知道為什麼原作者沒給，所以就自己寫了一份轉檔程式。
+
+親測可用！
+還附上多執行緒版本（因為單執行緒世界慢）。
+
+如果有問題歡迎聯絡我。
+
+## Contact
+
+Further information please contact me.
+
+wuyiulin@gmail.com
