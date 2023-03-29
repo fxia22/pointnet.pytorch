@@ -94,9 +94,8 @@ class ShapeNetDataset(data.Dataset):
 
         self.datapath = []
         for item in self.cat:
-            for fn in self.meta[item]:
-                self.datapath.append((item, fn[0], fn[1]))
-
+            for (fn_0, fn_1, *fn_len) in self.meta[item]:
+                self.datapath.append((item, fn_0, fn_1))
         self.classes = dict(zip(sorted(self.cat), range(len(self.cat))))
         print(self.classes)
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../misc/num_seg_classes.txt'), 'r') as f:
